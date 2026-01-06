@@ -1,5 +1,6 @@
 #include "allocator.h"
 
+#include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
 
@@ -28,19 +29,8 @@ allocator_push(Allocator *allocator, int num_bytes) {
       out.successful = false;
       return out;
     }
-
-    // Resize allocator (not ideal)
-    out.expanded_allocator = true;
-    char *old_data = allocator->data;
-    allocator->data = malloc(allocator->capacity*2);
-    assert(allocator->data != NULL);
-
-    // Copy old array
-    for (int i = 0; i < allocator->offset; i++) {
-      allocator->data[i] = old_data[i];
-    }
-    allocator->capacity *= 2;
-    free(old_data);
+    printf("Allocator allows expansion but expansion not defined");
+    assert(false);
   }
 
   out.data = &allocator->data[allocator->offset];
