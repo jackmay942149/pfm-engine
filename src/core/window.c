@@ -6,6 +6,7 @@
 #include <wingdi.h>
 #include <winuser.h>
 
+#include "types.h"
 #include "window.h"
 #include "allocator.h"
 
@@ -20,8 +21,8 @@ main_window_callback(Window_Handle_Win handle, uint message, Message_Param_U64pt
       return 0;
     }
     case WM_SIZE: {
-      UINT width = LOWORD(param_2);
-      UINT height = HIWORD(param_2);
+      uint width = LOWORD(param_2);
+      uint height = HIWORD(param_2);
       glViewport(0, 0, width, height);
       return 0;
     }

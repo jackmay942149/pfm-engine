@@ -13,7 +13,6 @@ typedef MSG Message_Win;
 typedef WPARAM Message_Param_U64ptr_Win;
 typedef LPARAM Message_Param_I64ptr_Win;
 typedef LRESULT Result_I64ptr_Win;
-typedef UINT uint;
 typedef HDC Device_Context_Win;
 
 typedef struct {

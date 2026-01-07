@@ -3,112 +3,28 @@
 
 #include <windows.h>
 #include <gl/GL.h>
-#include <wingdi.h>
 
 #include "window.h"
 #include "renderer.h"
 #include "allocator.h"
+#include "opengl-loader.h"
+#include "opengl-functions.h"
 
+#include "shader.c"
 #include "window.c"
 #include "renderer.c"
 #include "allocator.c"
 
-
-float vertices[] = {
+Vertex tri_vertices[] = {
   -.5f, -.5f, 0.f,
    .5f, -.5f, 0.f,
    0.f,  .5f, 0.f
 };
-
-#define GL_ARRAY_BUFFER 0x8892
-#define GL_STATIC_DRAW 0x88E4
-#define GL_VERTEX_SHADER 0x8B31
-#define GL_FRAGMENT_SHADER 0x8B30
-#define GL_COMPILE_STATUS 0x8B81
-#define GL_LINK_STATUS 0x8B82
-
-typedef ptrdiff_t GLsizeiptr;
-typedef char GLchar;
-
-typedef void (*GL_GENBUFFERS) (GLsizei, GLuint*);
-GL_GENBUFFERS glGenBuffers;
-
-typedef void (*GL_BINDBUFFER) (GLenum, GLuint);
-GL_BINDBUFFER glBindBuffer;
-
-typedef void (*GL_BUFFERDATA) (GLenum target, GLsizeiptr size, const void *, GLenum);
-GL_BUFFERDATA glBufferData;
-
-typedef GLuint (*GL_CREATESHADER) (GLenum shader_type);
-GL_CREATESHADER glCreateShader;
-
-typedef void (*GL_SHADERSOURCE) (GLuint shader, GLsizei count, const GLchar **string, const GLint *length);
-GL_SHADERSOURCE glShaderSource;
-
-typedef void (*GL_COMPILESHADER) (GLuint shader);
-GL_COMPILESHADER glCompileShader;
-
-typedef void (*GL_GETSHADERIV) (GLuint shader, GLenum pname, GLint *params);
-GL_GETSHADERIV glGetShaderiv;
-
-typedef void (*GL_GETSHADERINFOLOG) (GLuint shader, GLsizei max_length, GLsizei *length, GLchar *info_log);
-GL_GETSHADERINFOLOG glGetShaderInfoLog;
-
-typedef GLuint (*GL_CREATEPROGRAM) (void);
-GL_CREATEPROGRAM glCreateProgram;
-
-typedef void (*GL_ATTACHSHADER) (GLuint program, GLuint shader);
-GL_ATTACHSHADER glAttachShader;
-
-typedef void (*GL_LINKPROGRAM) (GLuint program);
-GL_LINKPROGRAM glLinkProgram;
-
-typedef void (*GL_GETPROGRAMIV) (GLuint program, GLenum pname, GLint *params);
-GL_GETPROGRAMIV glGetProgramiv;
-
-typedef void (*GL_GETPROGRAMINFOLOG) (GLuint program, GLsizei max_length, GLsizei *length, GLchar *info_log);
-GL_GETPROGRAMINFOLOG glGetProgramInfoLog;
-
-typedef void (*GL_USEPROGRAM) (GLuint program);
-GL_USEPROGRAM glUseProgram;
-
-typedef void (*GL_DELETESHADER) (GLuint shader);
-GL_DELETESHADER glDeleteShader;
-
-typedef void (*GL_VERTEXATTRIBPOINTER) (GLuint index, GLint size, GLenum type, GLboolean normalised, GLsizei stride, const void *pointer);
-GL_VERTEXATTRIBPOINTER glVertexAttribPointer;
-
-typedef void (*GL_ENABLEVERTEXATTRIBARRAY) (GLuint index);
-GL_ENABLEVERTEXATTRIBARRAY glEnableVertexAttribArray;
-
-typedef void (*GL_GENVERTEXARRAYS) (GLsizei n, GLuint *arrays);
-GL_GENVERTEXARRAYS glGenVertexArrays;
-
-typedef void (*GL_BINDVERTEXARRAY) (GLuint array);
-GL_BINDVERTEXARRAY glBindVertexArray;
-
-void
-load_gl_funcs() {
-  glGenBuffers = (GL_GENBUFFERS)wglGetProcAddress("glGenBuffers");
-  glBindBuffer = (GL_BINDBUFFER)wglGetProcAddress("glBindBuffer");
-  glBufferData = (GL_BUFFERDATA)wglGetProcAddress("glBufferData");
-  glCreateShader = (GL_CREATESHADER)wglGetProcAddress("glCreateShader");
-  glShaderSource = (GL_SHADERSOURCE)wglGetProcAddress("glShaderSource");
-  glCompileShader = (GL_COMPILESHADER)wglGetProcAddress("glCompileShader");
-  glGetShaderiv = (GL_GETSHADERIV)wglGetProcAddress("glGetShaderiv");
-  glGetShaderInfoLog = (GL_GETSHADERINFOLOG)wglGetProcAddress("glGetShaderInfoLog");
-  glCreateProgram = (GL_CREATEPROGRAM)wglGetProcAddress("glCreateProgram");
-  glAttachShader = (GL_ATTACHSHADER)wglGetProcAddress("glAttachShader");
-  glLinkProgram = (GL_LINKPROGRAM)wglGetProcAddress("glLinkProgram");
-  glGetProgramiv = (GL_GETPROGRAMIV)wglGetProcAddress("glGetProgramiv");
-  glGetProgramInfoLog = (GL_GETPROGRAMINFOLOG)wglGetProcAddress("glGetProgramInfoLog");
-  glUseProgram = (GL_USEPROGRAM)wglGetProcAddress("glUseProgram");
-  glDeleteShader = (GL_DELETESHADER)wglGetProcAddress("glDeleteShader");
-  glVertexAttribPointer = (GL_VERTEXATTRIBPOINTER)wglGetProcAddress("glVertexAttribPointer");
-  glEnableVertexAttribArray = (GL_ENABLEVERTEXATTRIBARRAY)wglGetProcAddress("glEnableVertexAttribArray");
-  glGenVertexArrays = (GL_GENVERTEXARRAYS)wglGetProcAddress("glGenVertexArrays");
-  glBindVertexArray = (GL_BINDVERTEXARRAY)wglGetProcAddress("glBindVertexArray");
-}
+Vertex tri_2_vertices[] = {
+  -.5f, -.5f, 0.f,
+   .9f, -.6f, 0.f,
+   0.1f,  .3f, 0.f
+};
 
 const char *vertex_shader_src = "#version 330 core\n"
   "layout (location = 0) in vec3 aPos;\n"
@@ -125,78 +41,6 @@ const char *fragment_shader_src = "#version 330 core\n"
   "} \0";
 
 
-typedef struct {
-  unsigned int shader_program, vao;
-} OpenGLObj;
-
-OpenGLObj
-setup_triangle() {
-  load_gl_funcs();
-
-  unsigned int vertex_shader;
-  vertex_shader = glCreateShader(GL_VERTEX_SHADER);
-  glShaderSource(vertex_shader, 1, &vertex_shader_src, NULL);
-  glCompileShader(vertex_shader);
-
-  int success;
-  char info_log[512];
-  glGetShaderiv(vertex_shader, GL_COMPILE_STATUS, &success);
-  if (!success) {
-    glGetShaderInfoLog(vertex_shader, 512, NULL, info_log);
-    printf("%s", info_log);
-    assert(false);
-  }
-
-  unsigned int fragment_shader;
-  fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);
-  glShaderSource(fragment_shader, 1, &fragment_shader_src, NULL);
-  glCompileShader(fragment_shader);
-
-  glGetShaderiv(fragment_shader, GL_COMPILE_STATUS, &success);
-  if (!success) {
-    glGetShaderInfoLog(fragment_shader, 512, NULL, info_log);
-    printf("%s", info_log);
-    assert(false);
-  }
-
-  unsigned int shader_program;
-  shader_program = glCreateProgram();
-  glAttachShader(shader_program, vertex_shader);
-  glAttachShader(shader_program, fragment_shader);
-  glLinkProgram(shader_program);
-  
-  glGetProgramiv(shader_program, GL_LINK_STATUS, &success);
-  if (!success) {
-    glGetProgramInfoLog(shader_program, 512, NULL, info_log);
-  }
-
-  glUseProgram(shader_program);
-  glDeleteShader(vertex_shader);
-  glDeleteShader(fragment_shader);
-
-
-  unsigned int VAO;
-  glGenVertexArrays(1, &VAO);
-  glBindVertexArray(VAO);
-  
-  unsigned int VBO;
-  glGenBuffers(1, &VBO);
-  glBindBuffer(GL_ARRAY_BUFFER, VBO);
-  glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
-  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-  glEnableVertexAttribArray(0);
- 
-  return (OpenGLObj) {shader_program, VAO};
-}
-
-void
-draw_triangle(OpenGLObj tri) {
-  glUseProgram(tri.shader_program);
-  glBindVertexArray(tri.vao);
-  glDrawArrays(GL_TRIANGLES, 0, 3);
-}
-
 int
 main() {
   Allocator app_allocator = allocator_create(1000, false);
@@ -207,12 +51,15 @@ main() {
   Renderer renderer = {
     .window = window
   };
-
-  OpenGLObj tri = setup_triangle();
+  load_gl_funcs();
+  
+  Renderable tri2 = renderable_create(vertex_shader_src, fragment_shader_src, tri_2_vertices, sizeof(tri_2_vertices)/sizeof(Vertex));
+  Renderable tri = renderable_create(vertex_shader_src, fragment_shader_src, tri_vertices, sizeof(tri_vertices)/sizeof(Vertex));
 
   while (!window_should_close(window)) {
     renderer_clear_colour(&renderer, &(Colour){0.f, 0.f, 0.f, 1.f});
-    draw_triangle(tri);
+    renderer_draw_renderable(&renderer, &tri2);
+    renderer_draw_renderable(&renderer, &tri);
     window_poll_events(window);
     window_swap_buffers(window);
     allocator_free_all(&frame_allocator);
