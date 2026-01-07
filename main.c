@@ -72,6 +72,21 @@ GL_GETPROGRAMINFOLOG glGetProgramInfoLog;
 typedef void (*GL_USEPROGRAM) (GLuint program);
 GL_USEPROGRAM glUseProgram;
 
+typedef void (*GL_DELETESHADER) (GLuint shader);
+GL_DELETESHADER glDeleteShader;
+
+typedef void (*GL_VERTEXATTRIBPOINTER) (GLuint index, GLint size, GLenum type, GLboolean normalised, GLsizei stride, const void *pointer);
+GL_VERTEXATTRIBPOINTER glVertexAttribPointer;
+
+typedef void (*GL_ENABLEVERTEXATTRIBARRAY) (GLuint index);
+GL_ENABLEVERTEXATTRIBARRAY glEnableVertexAttribArray;
+
+typedef void (*GL_GENVERTEXARRAYS) (GLsizei n, GLuint *arrays);
+GL_GENVERTEXARRAYS glGenVertexArrays;
+
+typedef void (*GL_BINDVERTEXARRAY) (GLuint array);
+GL_BINDVERTEXARRAY glBindVertexArray;
+
 void
 load_gl_funcs() {
   glGenBuffers = (GL_GENBUFFERS)wglGetProcAddress("glGenBuffers");
@@ -88,6 +103,11 @@ load_gl_funcs() {
   glGetProgramiv = (GL_GETPROGRAMIV)wglGetProcAddress("glGetProgramiv");
   glGetProgramInfoLog = (GL_GETPROGRAMINFOLOG)wglGetProcAddress("glGetProgramInfoLog");
   glUseProgram = (GL_USEPROGRAM)wglGetProcAddress("glUseProgram");
+  glDeleteShader = (GL_DELETESHADER)wglGetProcAddress("glDeleteShader");
+  glVertexAttribPointer = (GL_VERTEXATTRIBPOINTER)wglGetProcAddress("glVertexAttribPointer");
+  glEnableVertexAttribArray = (GL_ENABLEVERTEXATTRIBARRAY)wglGetProcAddress("glEnableVertexAttribArray");
+  glGenVertexArrays = (GL_GENVERTEXARRAYS)wglGetProcAddress("glGenVertexArrays");
+  glBindVertexArray = (GL_BINDVERTEXARRAY)wglGetProcAddress("glBindVertexArray");
 }
 
 const char *vertex_shader_src = "#version 330 core\n"
@@ -104,15 +124,14 @@ const char *fragment_shader_src = "#version 330 core\n"
   "    FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);\n"
   "} \0";
 
-void
+
+typedef struct {
+  unsigned int shader_program, vao;
+} OpenGLObj;
+
+OpenGLObj
 setup_triangle() {
   load_gl_funcs();
-
-  unsigned int VBO;
-  glGenBuffers(1, &VBO);
-  glBindBuffer(GL_ARRAY_BUFFER, VBO);
-  glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
 
   unsigned int vertex_shader;
   vertex_shader = glCreateShader(GL_VERTEX_SHADER);
@@ -152,8 +171,30 @@ setup_triangle() {
   }
 
   glUseProgram(shader_program);
-  // Delete program
+  glDeleteShader(vertex_shader);
+  glDeleteShader(fragment_shader);
 
+
+  unsigned int VAO;
+  glGenVertexArrays(1, &VAO);
+  glBindVertexArray(VAO);
+  
+  unsigned int VBO;
+  glGenBuffers(1, &VBO);
+  glBindBuffer(GL_ARRAY_BUFFER, VBO);
+  glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+  glEnableVertexAttribArray(0);
+ 
+  return (OpenGLObj) {shader_program, VAO};
+}
+
+void
+draw_triangle(OpenGLObj tri) {
+  glUseProgram(tri.shader_program);
+  glBindVertexArray(tri.vao);
+  glDrawArrays(GL_TRIANGLES, 0, 3);
 }
 
 int
@@ -167,10 +208,11 @@ main() {
     .window = window
   };
 
-  setup_triangle();
+  OpenGLObj tri = setup_triangle();
 
   while (!window_should_close(window)) {
     renderer_clear_colour(&renderer, &(Colour){0.f, 0.f, 0.f, 1.f});
+    draw_triangle(tri);
     window_poll_events(window);
     window_swap_buffers(window);
     allocator_free_all(&frame_allocator);

@@ -2,6 +2,10 @@
 #include <windows.h>
 #include <stdio.h>
 
+#include <gl/GL.h>
+#include <wingdi.h>
+#include <winuser.h>
+
 #include "window.h"
 #include "allocator.h"
 
@@ -11,9 +15,14 @@ main_window_callback(Window_Handle_Win handle, uint message, Message_Param_U64pt
   switch (message) {
     case WM_CREATE: return 0;
     case WM_PAINT: return 0;
-    case WM_SIZE: return 0;
     case WM_CLOSE:  {
       window->should_close = true;
+      return 0;
+    }
+    case WM_SIZE: {
+      UINT width = LOWORD(param_2);
+      UINT height = HIWORD(param_2);
+      glViewport(0, 0, width, height);
       return 0;
     }
     case WM_DESTROY: {
@@ -42,7 +51,7 @@ window_create(int size_x, int size_y, const char *title, Allocator *allocator) {
   // Register class on first window creation TODO(Jack): Pull this out with error handling
   static int registered_class = 0;
   if (registered_class == 0) {
-    Window_Class_Info_Win window_class = {.style = CS_OWNDC | CS_HREDRAW | CS_VREDRAW, .lpfnWndProc = main_window_callback, .hInstance = NULL, .hIcon = LoadIcon(NULL, IDI_APPLICATION), .hCursor = LoadCursor(NULL, IDC_ARROW), .hbrBackground = GetStockObject(WHITE_BRUSH), .lpszMenuName = "MainMenu", .lpszClassName = "MainWClass"};
+    Window_Class_Info_Win window_class = {.style = CS_OWNDC | CS_HREDRAW | CS_VREDRAW, .lpfnWndProc = main_window_callback, .hInstance = NULL, .hIcon = LoadIcon(NULL, IDI_APPLICATION), .hCursor = LoadCursor(NULL, IDC_ARROW), .hbrBackground = GetStockObject(BLACK_BRUSH), .lpszMenuName = "MainMenu", .lpszClassName = "MainWClass"};
 
     int registered = RegisterClass(&window_class);
     if (!registered) {
