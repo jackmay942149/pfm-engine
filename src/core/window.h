@@ -29,15 +29,15 @@ Window*
 window_create(int size_x, int size_y, const char *title, Allocator *allocator);
 
 void
-window_poll_events(Window *window);
+window_poll_events(const Window *window);
 
 Bool
-window_should_close(Window *window);
+window_should_close(const Window *window);
 
 void
-window_close(Window *window);
+window_close(const Window *window);
 
 void
-window_swap_buffers(Window *window);
+window_swap_buffers(const Window *window);
 
 #endif

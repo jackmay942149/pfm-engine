@@ -96,7 +96,7 @@ window_create(int size_x, int size_y, const char *title, Allocator *allocator) {
   return window;
 }
 
-void window_poll_events(Window* window) {
+void window_poll_events(const Window* window) {
   int got_message;
   Message_Win message;
   while (PeekMessage(&message, window->handle, 0, 0, PM_REMOVE) != 0) {
@@ -114,18 +114,18 @@ void window_poll_events(Window* window) {
 }
 
 Bool
-window_should_close(Window* window) {
+window_should_close(const Window* window) {
   return window->should_close;
 }
 
 void
-window_close(Window* window) {
+window_close(const Window* window) {
   DestroyWindow(window->handle);
   return;
 }
 
 void
-window_swap_buffers(Window* window) {
+window_swap_buffers(const Window* window) {
   SwapBuffers(window->context);
   return;
 }

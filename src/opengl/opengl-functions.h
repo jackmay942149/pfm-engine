@@ -60,3 +60,9 @@ GL_GENVERTEXARRAYS glGenVertexArrays;
 
 typedef void (*GL_BINDVERTEXARRAY) (GLuint array);
 GL_BINDVERTEXARRAY glBindVertexArray;
+
+typedef GLint (*GL_GETUNIFORMLOCATION) (GLuint program, const GLchar *name);
+GL_GETUNIFORMLOCATION glGetUniformLocation;
+
+typedef void (*GL_UNIFORM2F) (GLint location, GLfloat x, GLfloat y);
+GL_UNIFORM2F glUniform2f;

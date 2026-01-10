@@ -8,7 +8,7 @@
 #include "opengl-functions.h"
 
 void
-renderer_clear_colour(Renderer *renderer, Colour* colour) {
+renderer_clear_colour(const Renderer *renderer, const Colour* colour) {
   assert(renderer != NULL);
   assert(colour != NULL);
   glClearColor(colour->r, colour->g, colour->b, colour->a);
@@ -17,7 +17,7 @@ renderer_clear_colour(Renderer *renderer, Colour* colour) {
 }
 
 void
-renderer_draw_renderable(Renderer *renderer, Renderable *object) {
+renderer_draw_renderable(const Renderer *renderer, const Renderable *object) {
   assert(renderer != NULL);
   assert(object != NULL);
   glUseProgram(object->shader_program);

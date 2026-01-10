@@ -28,10 +28,10 @@ typedef struct {
 } Renderer;
 
 void
-renderer_clear_colour(Renderer *renderer, Colour *colour);
+renderer_clear_colour(const Renderer *renderer, const Colour *colour);
 
 void
-renderer_draw_renderable(Renderer *renderer, Renderable *triangle);
+renderer_draw_renderable(const Renderer *renderer, const Renderable *triangle);
 
 Renderable
 renderable_create(const char *vert_shader_src, const char *frag_shader_src, Vertex *vertices, uint vertex_count);
