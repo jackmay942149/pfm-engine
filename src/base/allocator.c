@@ -5,7 +5,7 @@
 #include <assert.h>
 
 Allocator
-allocator_create(int initial_size, bool allow_expansion) {
+allocator_create(int initial_size, Bool allow_expansion) {
   Allocator out = {};
 
   out.data = malloc(initial_size);

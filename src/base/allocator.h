@@ -6,8 +6,8 @@
 typedef struct {
   char* data;  
   int   bytes_allocated;
-  bool  successful;
-  bool  expanded_allocator;
+  Bool successful;
+  Bool expanded_allocator;
 } Allocation;
 
 typedef struct {
@@ -18,7 +18,7 @@ typedef struct {
 } Allocator;
 
 Allocator
-allocator_create(int initial_size, bool allow_expansion);
+allocator_create(int initial_size, Bool allow_expansion);
 
 Allocation
 allocator_push(Allocator *allocator, int num_bytes);
