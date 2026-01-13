@@ -18,8 +18,10 @@ typedef struct {
 typedef struct {
   uint vao;
   uint vbo;
+  uint ebo;
   uint shader_program;
   uint vertex_count;
+  uint index_count;
   Vertex *vertex_data;
 } Renderable;
 
@@ -34,7 +36,7 @@ void
 renderer_draw_renderable(const Renderable *triangle);
 
 Renderable
-renderable_create(const char *vert_shader_src, const char *frag_shader_src, Vertex *vertices, uint vertex_count);
+renderable_create(const char *vert_shader_src, const char *frag_shader_src, Vertex *vertices, u32 *indicies, u32 vertex_count, u32 index_count);
 
 void
 renderer_draw_rectangle(f32 pos_x, f32 pos_y, f32 width, f32 height);

@@ -22,22 +22,29 @@ renderer_draw_renderable(const Renderable *object) {
   glUseProgram(object->shader_program);
   glBindVertexArray(object->vao);
   glBindBuffer(GL_ARRAY_BUFFER, object->vbo);
-  glDrawArrays(GL_TRIANGLES, 0, object->vertex_count);
+  glBindBuffer(GL_ARRAY_BUFFER, object->ebo);
+  glDrawElements(GL_TRIANGLES, object->index_count, GL_UNSIGNED_INT, 0);
   return;
 }
 
 Renderable
-renderable_create(const char *vert_shader_src, const char *frag_shader_src, Vertex *vertices, uint vertex_count) {
+renderable_create(const char *vert_shader_src, const char *frag_shader_src, Vertex *vertices, u32 *indicies, u32 vertex_count, u32 index_count) {
   Shader orange_shader = shader_register(vert_shader_src, frag_shader_src);
 
   uint vao;
   glGenVertexArrays(1, &vao);
   glBindVertexArray(vao);
   
-  unsigned int vbo;
+  uint vbo;
   glGenBuffers(1, &vbo);
   glBindBuffer(GL_ARRAY_BUFFER, vbo);
   glBufferData(GL_ARRAY_BUFFER, sizeof(vertices[0]) * vertex_count, vertices, GL_STATIC_DRAW);
+
+  uint ebo;
+  glGenBuffers(1, &ebo);
+  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
+  glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indicies[0]) * index_count, indicies, GL_STATIC_DRAW);
+
   glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
   glEnableVertexAttribArray(0);
 
@@ -45,8 +52,10 @@ renderable_create(const char *vert_shader_src, const char *frag_shader_src, Vert
   out.shader_program = orange_shader.id;
   out.vao = vao;
   out.vbo = vbo;
+  out.ebo = ebo;
   out.vertex_data = vertices;
   out.vertex_count = vertex_count;
+  out.index_count = index_count;
   
   return out;
 }
@@ -64,19 +73,24 @@ Vertex rect_vertices[] = {
   -1.0f, -1.0f, 0.0f,
    1.0f, -1.0f, 0.0f,
    1.0f,  1.0f, 0.0f,
-  -1.0f, -1.0f, 0.0f,
-   1.0f,  1.0f, 0.0f,
   -1.0f,  1.0f, 0.0f
+};
+
+u32 rect_indicies[] = {
+  0, 1, 2,
+  0, 2, 3
 };
 
 void
 renderer_draw_rectangle(f32 pos_x, f32 pos_y, f32 width, f32 height) {
+  // Run once to set up rectangle
   static Renderable rect = {};
   static bool initialised = false;
   if (!initialised) {
-    rect = renderable_create(rect_vert_shader_src, rect_frag_shader_src, rect_vertices, sizeof(rect_vertices)/sizeof(Vertex));
+    rect = renderable_create(rect_vert_shader_src, rect_frag_shader_src, rect_vertices, rect_indicies, sizeof(rect_vertices)/sizeof(Vertex), sizeof(rect_indicies)/ sizeof(u32));
     initialised = true;
   }
+
   glUseProgram(rect.shader_program);
   int u_pos_location = glGetUniformLocation(rect.shader_program, "u_pos");
   int u_width_location = glGetUniformLocation(rect.shader_program, "u_width");
