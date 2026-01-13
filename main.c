@@ -62,23 +62,11 @@ main() {
     .window = window
   };
   load_gl_funcs();
-  
-  Renderable tri = renderable_create(vertex_shader_src, fragment_shader_src, tri_vertices, sizeof(tri_vertices)/sizeof(Vertex));
-  Entity scene[100];
-  for (int i = 0; i < 100; i++) {
-    Entity* entity = &scene[i];
-    int x_coord = i % 10;
-    int y_coord = i / 10;
-    entity->position = (Vector2f32){.x = x_coord/5.f - 1.f, .y = y_coord/5.f - 1.f};
-    entity->render_data = &tri;
-  }
 
   while (!window_should_close(window)) {
     renderer_clear_colour(&renderer, &(Colour){0.f, 0.f, 0.f, 1.f});
-    for (int i = 0; i < 100; i++) {
-      draw_entity(&scene[i]);
-    }
-    // renderer_draw_renderable(&renderer, &tri);
+    renderer_draw_rectangle(0.f, 0.f, 0.5f, 0.1f);
+    renderer_draw_rectangle(0.f, .5f, 0.5f, 0.1f);
     window_poll_events(window);
     window_swap_buffers(window);
     allocator_free_all(&frame_allocator);

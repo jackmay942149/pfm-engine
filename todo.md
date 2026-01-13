@@ -1,7 +1,3 @@
-# Main Task (Tri Grid)
-## Description
-Render a grid of 10 by 10 triangles that use the same renderable component
-
 ## Things to investigate
 - Adding ebo
 - Adding materials
@@ -15,3 +11,5 @@ Render a grid of 10 by 10 triangles that use the same renderable component
 Be able to render a scene like the pumpkin one or the boat dock
 
 # Main Task (Clay UI)
+- Draw Rectangle (Working atm)
+- Draw Text

@@ -22,5 +22,6 @@ load_gl_funcs() {
   glGenVertexArrays = (GL_GENVERTEXARRAYS)wglGetProcAddress("glGenVertexArrays");
   glBindVertexArray = (GL_BINDVERTEXARRAY)wglGetProcAddress("glBindVertexArray");
   glGetUniformLocation = (GL_GETUNIFORMLOCATION)wglGetProcAddress("glGetUniformLocation");
+  glUniform1f = (GL_UNIFORM1F)wglGetProcAddress("glUniform1f");
   glUniform2f = (GL_UNIFORM2F)wglGetProcAddress("glUniform2f");
 }

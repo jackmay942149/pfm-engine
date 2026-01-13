@@ -17,8 +17,7 @@ renderer_clear_colour(const Renderer *renderer, const Colour* colour) {
 }
 
 void
-renderer_draw_renderable(const Renderer *renderer, const Renderable *object) {
-  assert(renderer != NULL);
+renderer_draw_renderable(const Renderable *object) {
   assert(object != NULL);
   glUseProgram(object->shader_program);
   glBindVertexArray(object->vao);
@@ -26,7 +25,6 @@ renderer_draw_renderable(const Renderer *renderer, const Renderable *object) {
   glDrawArrays(GL_TRIANGLES, 0, object->vertex_count);
   return;
 }
-
 
 Renderable
 renderable_create(const char *vert_shader_src, const char *frag_shader_src, Vertex *vertices, uint vertex_count) {
@@ -51,4 +49,40 @@ renderable_create(const char *vert_shader_src, const char *frag_shader_src, Vert
   out.vertex_count = vertex_count;
   
   return out;
+}
+
+// Draw rectangle at any point
+const char rect_vert_shader_src[] = {
+  #embed  "../shaders/rectangle.vert"
+};
+
+const char rect_frag_shader_src[] = {
+  #embed  "../shaders/red.frag"
+};
+
+Vertex rect_vertices[] = {
+  -1.0f, -1.0f, 0.0f,
+   1.0f, -1.0f, 0.0f,
+   1.0f,  1.0f, 0.0f,
+  -1.0f, -1.0f, 0.0f,
+   1.0f,  1.0f, 0.0f,
+  -1.0f,  1.0f, 0.0f
+};
+
+void
+renderer_draw_rectangle(f32 pos_x, f32 pos_y, f32 width, f32 height) {
+  static Renderable rect = {};
+  static bool initialised = false;
+  if (!initialised) {
+    rect = renderable_create(rect_vert_shader_src, rect_frag_shader_src, rect_vertices, sizeof(rect_vertices)/sizeof(Vertex));
+    initialised = true;
+  }
+  glUseProgram(rect.shader_program);
+  int u_pos_location = glGetUniformLocation(rect.shader_program, "u_pos");
+  int u_width_location = glGetUniformLocation(rect.shader_program, "u_width");
+  int u_height_location = glGetUniformLocation(rect.shader_program, "u_height");
+  glUniform2f(u_pos_location, pos_x, pos_y);
+  glUniform1f(u_width_location, width);
+  glUniform1f(u_height_location, height);
+  renderer_draw_renderable(&rect);
 }
