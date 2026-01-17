@@ -8,3 +8,5 @@
 
 #define GL_COMPILE_STATUS 0x8B81
 #define GL_LINK_STATUS 0x8B82
+
+#define GL_TEXTURE0 0x84C0

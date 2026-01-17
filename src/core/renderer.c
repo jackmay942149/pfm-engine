@@ -4,8 +4,13 @@
 #include <gl/GL.h>
 #include <assert.h>
 
+#include "types.h"
 #include "shader.h"
 #include "opengl-functions.h"
+
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
+
 
 void
 renderer_clear_colour(const Renderer *renderer, const Colour* colour) {
@@ -20,6 +25,7 @@ void
 renderer_draw_renderable(const Renderable *object) {
   assert(object != NULL);
   glUseProgram(object->shader_program);
+  glBindTexture(GL_TEXTURE_2D, object->texture_id);
   glBindVertexArray(object->vao);
   glBindBuffer(GL_ARRAY_BUFFER, object->vbo);
   glBindBuffer(GL_ARRAY_BUFFER, object->ebo);
@@ -28,7 +34,7 @@ renderer_draw_renderable(const Renderable *object) {
 }
 
 Renderable
-renderable_create(const char *vert_shader_src, const char *frag_shader_src, Vertex *vertices, u32 *indicies, u32 vertex_count, u32 index_count) {
+renderable_create(const char *vert_shader_src, const char *frag_shader_src, const char *texture_src, Vertex *vertices, u32 *indicies, u32 vertex_count, u32 index_count) {
   Shader orange_shader = shader_register(vert_shader_src, frag_shader_src);
 
   uint vao;
@@ -45,14 +51,37 @@ renderable_create(const char *vert_shader_src, const char *frag_shader_src, Vert
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
   glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indicies[0]) * index_count, indicies, GL_STATIC_DRAW);
 
-  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
   glEnableVertexAttribArray(0);
+  glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+  glEnableVertexAttribArray(1);
+
+  // Setup texture
+  i32 width, height, channel_count;
+  stbi_set_flip_vertically_on_load(true);
+  unsigned char *data = stbi_load(texture_src, &width, &height, &channel_count, 0);
+  if (data == NULL) {
+    const char *err = stbi_failure_reason();
+    printf("%s\n", err);
+  }
+  uint texture_id;
+  glGenTextures(1, &texture_id);
+  glActiveTexture(GL_TEXTURE0);
+  glBindTexture(GL_TEXTURE_2D, texture_id);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+  glGenerateMipmap(GL_TEXTURE_2D);
+  stbi_image_free(data);
 
   Renderable out = {};
   out.shader_program = orange_shader.id;
   out.vao = vao;
   out.vbo = vbo;
   out.ebo = ebo;
+  out.texture_id = texture_id;
   out.vertex_data = vertices;
   out.vertex_count = vertex_count;
   out.index_count = index_count;
@@ -66,14 +95,15 @@ const char rect_vert_shader_src[] = {
 };
 
 const char rect_frag_shader_src[] = {
-  #embed  "../shaders/red.frag"
+  #embed  "../shaders/rectangle.frag"
 };
 
 Vertex rect_vertices[] = {
-  -1.0f, -1.0f, 0.0f,
-   1.0f, -1.0f, 0.0f,
-   1.0f,  1.0f, 0.0f,
-  -1.0f,  1.0f, 0.0f
+  // Position          // Tex Coords
+  -1.0f, -1.0f, 0.0f,  0.0f, 0.0f,
+   1.0f, -1.0f, 0.0f,  1.0f, 0.0f,
+   1.0f,  1.0f, 0.0f,  1.0f, 1.0f,
+  -1.0f,  1.0f, 0.0f,  0.0f, 1.0f
 };
 
 u32 rect_indicies[] = {
@@ -85,14 +115,15 @@ void
 renderer_draw_rectangle(f32 pos_x, f32 pos_y, f32 width, f32 height) {
   // Run once to set up rectangle
   static Renderable rect = {};
-  static bool initialised = false;
+  static Bool initialised = false;
   if (!initialised) {
-    rect = renderable_create(rect_vert_shader_src, rect_frag_shader_src, rect_vertices, rect_indicies, sizeof(rect_vertices)/sizeof(Vertex), sizeof(rect_indicies)/ sizeof(u32));
+    rect = renderable_create(rect_vert_shader_src, rect_frag_shader_src, "awesomeface.png", rect_vertices, rect_indicies, sizeof(rect_vertices)/sizeof(Vertex), sizeof(rect_indicies)/ sizeof(u32));
     initialised = true;
   }
 
   glUseProgram(rect.shader_program);
   int u_pos_location = glGetUniformLocation(rect.shader_program, "u_pos");
+  // int u_texture = glGetUniformLocation(rect.shader_program, "texture1");
   int u_width_location = glGetUniformLocation(rect.shader_program, "u_width");
   int u_height_location = glGetUniformLocation(rect.shader_program, "u_height");
   glUniform2f(u_pos_location, pos_x, pos_y);

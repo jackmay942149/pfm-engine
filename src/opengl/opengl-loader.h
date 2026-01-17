@@ -24,4 +24,7 @@ load_gl_funcs() {
   glGetUniformLocation = (GL_GETUNIFORMLOCATION)wglGetProcAddress("glGetUniformLocation");
   glUniform1f = (GL_UNIFORM1F)wglGetProcAddress("glUniform1f");
   glUniform2f = (GL_UNIFORM2F)wglGetProcAddress("glUniform2f");
+  glUniform1i = (GL_UNIFORM1I)wglGetProcAddress("glUniform1i");
+  glGenerateMipmap = (GL_GENERATEMIPMAP)wglGetProcAddress("glGenerateMipmap");
+  glActiveTexture = (GL_ACTIVETEXTURE)wglGetProcAddress("glActiveTexture");
 }

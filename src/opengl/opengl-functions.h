@@ -69,3 +69,12 @@ GL_UNIFORM1F glUniform1f;
 
 typedef void (*GL_UNIFORM2F) (GLint location, GLfloat x, GLfloat y);
 GL_UNIFORM2F glUniform2f;
+
+typedef void (*GL_UNIFORM1I) (GLint location, GLfloat x);
+GL_UNIFORM1I glUniform1i;
+
+typedef void (*GL_GENERATEMIPMAP) (GLenum target);
+GL_GENERATEMIPMAP glGenerateMipmap;
+
+typedef void (*GL_ACTIVETEXTURE) (GLenum texture);
+GL_ACTIVETEXTURE glActiveTexture;
