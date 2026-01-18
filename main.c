@@ -67,8 +67,8 @@ main() {
 
   while (!window_should_close(window)) {
     renderer_clear_colour(&renderer, &(Colour){0.f, 0.f, 0.f, 1.f});
-    renderer_draw_rectangle(0.f, 0.f, 2.0f, 2.0f);
-    renderer_draw_rectangle(0.f, .5f, 0.5f, 0.1f);
+    rectangle_draw(0.f, 0.f, 2.0f, 2.0f);
+    rectangle_draw(0.f, .5f, 0.5f, 0.1f);
     window_poll_events(window);
     window_swap_buffers(window);
     allocator_free_all(&frame_allocator);

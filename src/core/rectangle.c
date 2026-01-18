@@ -26,7 +26,7 @@ u32 rect_indicies[] = {
 };
 
 void
-renderer_draw_rectangle(f32 pos_x, f32 pos_y, f32 width, f32 height) {
+rectangle_draw(f32 pos_x, f32 pos_y, f32 width, f32 height) {
   // Run once to set up rectangle
   static Renderable rect = {};
   static Bool initialised = false;
@@ -36,10 +36,10 @@ renderer_draw_rectangle(f32 pos_x, f32 pos_y, f32 width, f32 height) {
   }
 
   glUseProgram(rect.shader_program);
-  int u_pos_location = glGetUniformLocation(rect.shader_program, "u_pos");
+  i32 u_pos_location = glGetUniformLocation(rect.shader_program, "u_pos");
   // int u_texture = glGetUniformLocation(rect.shader_program, "texture1");
-  int u_width_location = glGetUniformLocation(rect.shader_program, "u_width");
-  int u_height_location = glGetUniformLocation(rect.shader_program, "u_height");
+  i32 u_width_location = glGetUniformLocation(rect.shader_program, "u_width");
+  i32 u_height_location = glGetUniformLocation(rect.shader_program, "u_height");
   glUniform2f(u_pos_location, pos_x, pos_y);
   glUniform1f(u_width_location, width);
   glUniform1f(u_height_location, height);
