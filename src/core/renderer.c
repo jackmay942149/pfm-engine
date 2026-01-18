@@ -11,7 +11,6 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
-
 void
 renderer_clear_colour(const Renderer *renderer, const Colour* colour) {
   assert(renderer != NULL);
@@ -33,39 +32,54 @@ renderer_draw_renderable(const Renderable *object) {
   return;
 }
 
-Renderable
-renderable_create(const char *vert_shader_src, const char *frag_shader_src, const char *texture_src, Vertex *vertices, u32 *indicies, u32 vertex_count, u32 index_count) {
-  Shader orange_shader = shader_register(vert_shader_src, frag_shader_src);
-
-  uint vao;
+u32
+renderer_create_vao() {
+  u32 vao;
   glGenVertexArrays(1, &vao);
+  assert(vao != 0);
   glBindVertexArray(vao);
-  
-  uint vbo;
+  return vao;
+}
+
+u32
+renderer_create_vbo(const Vertex *vertices, u32 vertex_count) {
+  assert(vertices != NULL);
+  assert(vertex_count != 0);
+
+  u32 vbo;
   glGenBuffers(1, &vbo);
+  assert(vbo != 0);
   glBindBuffer(GL_ARRAY_BUFFER, vbo);
   glBufferData(GL_ARRAY_BUFFER, sizeof(vertices[0]) * vertex_count, vertices, GL_STATIC_DRAW);
+  return vbo;
+}
 
-  uint ebo;
+u32
+renderer_create_ebo(const u32 *indicies, u32 index_count) {
+  assert(indicies != NULL);
+  assert(index_count != 0);
+  
+  u32 ebo;
   glGenBuffers(1, &ebo);
+  assert(ebo != 0);
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
   glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indicies[0]) * index_count, indicies, GL_STATIC_DRAW);
+  return ebo;
+}
 
-  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
-  glEnableVertexAttribArray(0);
-  glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
-  glEnableVertexAttribArray(1);
-
-  // Setup texture
+u32
+renderer_create_texture(const char *texture_filepath) {
   i32 width, height, channel_count;
   stbi_set_flip_vertically_on_load(true);
-  unsigned char *data = stbi_load(texture_src, &width, &height, &channel_count, 0);
+  u8 *data = stbi_load(texture_filepath, &width, &height, &channel_count, 0);
   if (data == NULL) {
     const char *err = stbi_failure_reason();
     printf("%s\n", err);
   }
-  uint texture_id;
+  u32 texture_id;
   glGenTextures(1, &texture_id);
+  assert(texture_id != 0);
+
   glActiveTexture(GL_TEXTURE0);
   glBindTexture(GL_TEXTURE_2D, texture_id);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
@@ -76,8 +90,26 @@ renderable_create(const char *vert_shader_src, const char *frag_shader_src, cons
   glGenerateMipmap(GL_TEXTURE_2D);
   stbi_image_free(data);
 
+  return texture_id;
+}
+
+Renderable
+renderable_create(const char *vert_shader_src, const char *frag_shader_src, const char *texture_src, Vertex *vertices, u32 *indicies, u32 vertex_count, u32 index_count) {
+  Shader shader = shader_register(vert_shader_src, frag_shader_src);
+
+  u32 vao = renderer_create_vao();
+  u32 vbo = renderer_create_vbo(vertices, vertex_count);
+  u32 ebo = renderer_create_ebo(indicies, index_count);
+
+  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(f32), (void*)0);
+  glEnableVertexAttribArray(0);
+  glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(f32), (void*)(3 * sizeof(f32)));
+  glEnableVertexAttribArray(1);
+
+  u32 texture_id = renderer_create_texture(texture_src);
+
   Renderable out = {};
-  out.shader_program = orange_shader.id;
+  out.shader_program = shader.id;
   out.vao = vao;
   out.vbo = vbo;
   out.ebo = ebo;

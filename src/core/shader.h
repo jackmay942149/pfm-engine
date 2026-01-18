@@ -3,7 +3,7 @@
 #include "types.h"
 
 typedef struct {
-  uint id;
+  u32 id;
 } Shader;
 
 Shader

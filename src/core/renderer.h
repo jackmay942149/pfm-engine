@@ -5,25 +5,25 @@
 #include "window.h"
 
 typedef struct {
-  float r;
-  float g;
-  float b;
-  float a;  
+  f32 r;
+  f32 g;
+  f32 b;
+  f32 a;  
 } Colour;
 
 typedef struct {
-  float position[3];
-  float tex_coords[2];
+  f32 position[3];
+  f32 tex_coords[2];
 } Vertex;
 
 typedef struct {
-  uint vao;
-  uint vbo;
-  uint ebo;
-  uint texture_id;
-  uint shader_program;
-  uint vertex_count;
-  uint index_count;
+  u32 vao;
+  u32 vbo;
+  u32 ebo;
+  u32 texture_id;
+  u32 shader_program;
+  u32 vertex_count;
+  u32 index_count;
   Vertex *vertex_data;
 } Renderable;
 
@@ -43,4 +43,15 @@ renderable_create(const char *vert_shader_src, const char *frag_shader_src, cons
 void
 renderer_draw_rectangle(f32 pos_x, f32 pos_y, f32 width, f32 height);
 
+u32
+renderer_create_vao();
+
+u32
+renderer_create_vbo(const Vertex *vertices, u32 vertex_count);
+
+u32
+renderer_create_ebo(const u32 *indicies, u32 index_count);
+
+u32
+renderer_create_texture(const char *texture_filepath);
 #endif

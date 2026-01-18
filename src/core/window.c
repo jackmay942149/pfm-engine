@@ -36,7 +36,7 @@ main_window_callback(Window_Handle_Win handle, uint message, Message_Param_U64pt
 };
 
 Window*
-window_create(int size_x, int size_y, const char *title, Allocator *allocator) {
+window_create(i32 size_x, i32 size_y, const char *title, Allocator *allocator) {
   Window* window;
   if (allocator == NULL) {
     window = malloc(sizeof(Window));
@@ -46,15 +46,15 @@ window_create(int size_x, int size_y, const char *title, Allocator *allocator) {
     window = (Window*) allocation.data;
   }
   Window_Style_Win window_style = WS_OVERLAPPEDWINDOW;
-  int window_pos_x = 0;
-  int window_pos_y = 0;
+  i32 window_pos_x = 0;
+  i32 window_pos_y = 0;
 
   // Register class on first window creation TODO(Jack): Pull this out with error handling
-  static int registered_class = 0;
+  static i32 registered_class = 0;
   if (registered_class == 0) {
     Window_Class_Info_Win window_class = {.style = CS_OWNDC | CS_HREDRAW | CS_VREDRAW, .lpfnWndProc = main_window_callback, .hInstance = NULL, .hIcon = LoadIcon(NULL, IDI_APPLICATION), .hCursor = LoadCursor(NULL, IDC_ARROW), .hbrBackground = GetStockObject(BLACK_BRUSH), .lpszMenuName = "MainMenu", .lpszClassName = "MainWClass"};
 
-    int registered = RegisterClass(&window_class);
+    i32 registered = RegisterClass(&window_class);
     if (!registered) {
       return NULL; 
     }
@@ -81,12 +81,12 @@ window_create(int size_x, int size_y, const char *title, Allocator *allocator) {
   };
 
   window->context = GetDC(window->handle);
-  int pixel_format = ChoosePixelFormat(window->context, &pfd);
-  BOOL err = SetPixelFormat(window->context, pixel_format, &pfd);
-  assert(err != FALSE);
+  i32 pixel_format = ChoosePixelFormat(window->context, &pfd);
+  Bool err = SetPixelFormat(window->context, pixel_format, &pfd);
+  assert(err != false);
   HGLRC hglrc = wglCreateContext(window->context);
   err = wglMakeCurrent(window->context, hglrc);
-  assert(err != FALSE);
+  assert(err != false);
  
   window->should_close = false;
   
@@ -97,7 +97,7 @@ window_create(int size_x, int size_y, const char *title, Allocator *allocator) {
 }
 
 void window_poll_events(const Window* window) {
-  int got_message;
+  i32 got_message;
   Message_Win message;
   while (PeekMessage(&message, window->handle, 0, 0, PM_REMOVE) != 0) {
     if (message.message == WM_QUIT) {

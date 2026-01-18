@@ -3,6 +3,7 @@
 
 #include <windows.h>
 
+#include "types.h"
 #include "boolean.h"
 #include "allocator.h"
 
@@ -26,7 +27,7 @@ LRESULT CALLBACK
 main_window_callback(Window_Handle_Win hwnd, UINT uint, WPARAM wparam, LPARAM lparam);
   
 Window*
-window_create(int size_x, int size_y, const char *title, Allocator *allocator);
+window_create(i32 size_x, i32 size_y, const char *title, Allocator *allocator);
 
 void
 window_poll_events(const Window *window);
