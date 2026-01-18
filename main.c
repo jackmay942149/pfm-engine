@@ -7,6 +7,7 @@
 #include "window.h"
 #include "renderer.h"
 #include "allocator.h"
+#include "rectangle.h"
 #include "opengl-loader.h"
 #include "opengl-functions.h"
 
@@ -14,6 +15,7 @@
 #include "window.c"
 #include "renderer.c"
 #include "allocator.c"
+#include "rectangle.c"
 
 const char vertex_shader_src[] = {
   #embed "./src/shaders/default.vert"
